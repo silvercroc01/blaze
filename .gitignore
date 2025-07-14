@@ -1,0 +1,49 @@
+.cache
+.cache/
+# Build directories
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake-build-*/
+
+# Compiled object files, libraries, executables
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+*.exe
+*.out
+
+# Generated files
+Makefile
+Makefile.in
+cmake_install.cmake
+install_manifest.txt
+
+# Editor/IDE files
+*.swp
+*~
+*.user
+*.suo
+*.userosscache
+*.userprefs
+*.VC.db
+*.VC.opendb
+*.vscode/
+.idea/
+.DS_Store
+
+# Test/coverage
+*.gcda
+*.gcno
+*.gcov
+
+# Logs
+*.log
+
+# Other
+tags
+
