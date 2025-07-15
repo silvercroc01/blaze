@@ -2,10 +2,10 @@ input.txt
 .cache
 .cache/
 # Build directories
-/build/
-/CMakeFiles/
-/CMakeCache.txt
-/cmake-build-*/
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
 
 # Compiled object files, libraries, executables
 *.o
