@@ -2,9 +2,9 @@
 #include <string>
 #include <vector>
 #include "config.hpp"
+#include "fuzzy_matcher.hpp"
 #include "highlighter.hpp"
 #include "io.hpp"
-#include "matcher.hpp"
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
@@ -19,8 +19,9 @@ int main(int argc, char* argv[]) {
   }
 
   std::cerr << "[DEBUG] Query: " << config.query << "\n";
-  // std::string query = argv[1];
+
   std::vector<std::string> entries = read_lines(config.file_path);
+
   std::cerr << "[DEBUG] Read " << entries.size() << " lines\n";
 
   // std::string line;
@@ -30,6 +31,7 @@ int main(int argc, char* argv[]) {
 
   auto results = fuzzy_match(config.query, entries);
   std::cerr << "[DEBUG] Got " << results.size() << " matched lines\n";
+
   // arg: limit
   if (config.limit > 0 && results.size() > (size_t)config.limit) {
     results.resize(config.limit);
@@ -37,7 +39,9 @@ int main(int argc, char* argv[]) {
 
   for (const auto& result : results) {
     std::cerr << "[DEBUG] Output: " << result.line << " (score: " << result.score << ")\n";
-    std::string output = highlight_match(result.line, config.query, !config.no_color);
+
+    std::string output =
+        highlight_match(result.line, config.query, result.match_indices, !config.no_color);
     std::cout << output << "\n";
   }
   return 0;

@@ -1,18 +1,22 @@
-#include <cctype>
+#include <sstream>
 #include <string>
-std::string highlight_match(const std::string& line, const std::string& query, bool use_color) {
+#include <vector>
+std::string highlight_match(const std::string& line, const std::string& query,
+                            const std::vector<size_t>& indices, bool color) {
+  if (!color || indices.empty()) return line;
+  std::ostringstream out;
+  size_t idx = 0;
+
   std::string highlighted;
   size_t q_idx = 0;
 
-  for (char c : line) {
-    if (q_idx < query.size() && std::tolower(c) == std::tolower(query[q_idx])) {
-      if (use_color) highlighted += "\033[1;32m";
-      highlighted += c;
-      if (use_color) highlighted += "\033[0m";
-      ++q_idx;
+  for (size_t i = 0; i < line.size(); i++) {
+    if (idx < indices.size() && i == indices[idx]) {
+      out << "\033[1;32m" << line[i] << "\033[0m";
+      ++idx;
     } else {
-      highlighted += c;
+      out << line[i];
     }
   }
-  return highlighted;
+  return out.str();
 }
