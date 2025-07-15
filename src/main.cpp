@@ -7,42 +7,53 @@
 #include "io.hpp"
 
 int main(int argc, char* argv[]) {
-  if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " <search_query>\n";
-    return 1;
-  }
-  Config config = parse_args(argc, argv);
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <search_query>\n";
+        return 1;
+    }
+    Config config = parse_args(argc, argv);
 
-  if (config.query.empty()) {
-    std::cerr << "Usage: blaze [--query <str>] [--limit N] [--file FILE] [--no-color]\n";
-    return 1;
-  }
+    if (config.query.empty()) {
+        std::cerr << "Usage: blaze [--query <str>] [--limit N] [--file FILE] [--no-color]\n";
+        return 1;
+    }
 
-  std::cerr << "[DEBUG] Query: " << config.query << "\n";
+    std::cerr << "[DEBUG] Query: " << config.query << "\n";
 
-  std::vector<std::string> entries = read_lines(config.file_path);
+    std::vector<std::string> entries;
 
-  std::cerr << "[DEBUG] Read " << entries.size() << " lines\n";
+    if (!config.file_path.empty()) {
+        std::cerr << "[DEBUG] Opening File: " << config.file_path << "\n";
+        entries = read_lines(config.file_path);
+    } else {
+        std::cerr << "[DEBUG] reading from stdin: \n";
+        std::string line;
+        while (std::getline(std::cin, line)) {
+            entries.push_back(line);
+        }
+    }
 
-  // std::string line;
-  // while (std::getline(std ::cin, line)) {
-  //   entries.push_back(line);
-  // }
+    std::cerr << "[DEBUG] Read " << entries.size() << " lines\n";
 
-  auto results = fuzzy_match(config.query, entries);
-  std::cerr << "[DEBUG] Got " << results.size() << " matched lines\n";
+    // std::string line;
+    // while (std::getline(std ::cin, line)) {
+    //   entries.push_back(line);
+    // }
 
-  // arg: limit
-  if (config.limit > 0 && results.size() > (size_t)config.limit) {
-    results.resize(config.limit);
-  }
+    auto results = fuzzy_match(config.query, entries);
+    std::cerr << "[DEBUG] Got " << results.size() << " matched lines\n";
 
-  for (const auto& result : results) {
-    std::cerr << "[DEBUG] Output: " << result.line << " (score: " << result.score << ")\n";
+    // arg: limit
+    if (config.limit > 0 && results.size() > (size_t)config.limit) {
+        results.resize(config.limit);
+    }
 
-    std::string output =
-        highlight_match(result.line, config.query, result.match_indices, !config.no_color);
-    std::cout << output << "\n";
-  }
-  return 0;
+    for (const auto& result : results) {
+        std::cerr << "[DEBUG] Output: " << result.line << " (score: " << result.score << ")\n";
+
+        std::string output =
+            highlight_match(result.line, config.query, result.match_indices, !config.no_color);
+        std::cout << output << "\n";
+    }
+    return 0;
 }
