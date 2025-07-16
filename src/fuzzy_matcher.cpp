@@ -2,16 +2,17 @@
 #include <algorithm>
 #include <cctype>
 #include <string>
+#include <string_view>
 #include <vector>
 
 constexpr int BASE_SCORE = 1000;
-constexpr int CONSECUTIVE_BONUS = 5;
+constexpr int CONSECUTIVE_BONUS = 20;
 constexpr int WORD_BOUNDARY_BONUS = 30;
 constexpr double WORD_BOUNDARY_MULTIPLIER = 2;
 constexpr int COMPACTNESS_PENALTY = 30;
-constexpr int LATE_MATCH_PENALTY = 35;
+constexpr int LATE_MATCH_PENALTY = 50;
 
-bool is_word_boundary(const std::string& s, size_t i) {
+bool is_word_boundary(const std::string_view s, size_t i) {
     if (i == 0)
         return true;
     char prev = s[i - 1];
@@ -19,7 +20,7 @@ bool is_word_boundary(const std::string& s, size_t i) {
     return !std::isalnum(prev) || (std::islower(prev) && std::isupper(curr));
 }
 
-MatchResult calculate_match(const std::string& query, const std::string& line) {
+MatchResult calculate_match(const std::string_view query, const std::string_view line) {
     std::vector<size_t> match_indices;
 
     match_indices.reserve(query.size()); // stop dynamic growing
@@ -32,7 +33,8 @@ MatchResult calculate_match(const std::string& query, const std::string& line) {
     int last_match_pos = -1;
 
     // string preprocesssing to lowercase
-    std::string query_lower = query, line_lower = line;
+    std::string query_lower(query);
+    std::string line_lower(line);
     std::transform(query_lower.begin(), query_lower.end(), query_lower.begin(), ::tolower);
     std::transform(line_lower.begin(), line_lower.end(), line_lower.begin(), ::tolower);
 
@@ -73,7 +75,7 @@ MatchResult calculate_match(const std::string& query, const std::string& line) {
 
     // no match then
     if (query_pos < query_lower.size()) {
-        return MatchResult{line, -1, {}};
+        return MatchResult{std::string(line), -1, {}};
     }
 
     int match_span = static_cast<int>(match_indices.back() - match_indices.front() + 1);
@@ -86,10 +88,10 @@ MatchResult calculate_match(const std::string& query, const std::string& line) {
     score -= compactness_penalty;
     score -= late_match_penalty;
 
-    return MatchResult{line, BASE_SCORE + score, match_indices};
+    return MatchResult{std::string(line), BASE_SCORE + score, match_indices};
 }
-std::vector<MatchResult> fuzzy_match(const std::string& query,
-                                     const std::vector<std::string>& entries) {
+std::vector<MatchResult> fuzzy_match(const std::string_view query,
+                                     const std::vector<std::string_view>& entries) {
     std::vector<MatchResult> results;
     for (const auto& line : entries) {
         auto result = calculate_match(query, line);

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 #include "config.hpp"
 #include "fuzzy_matcher.hpp"
@@ -20,11 +21,12 @@ int main(int argc, char* argv[]) {
 
     std::cerr << "[DEBUG] Query: " << config.query << "\n";
 
-    std::vector<std::string> entries;
+    std::vector<std::string_view> entries;
+    std::string file_data;
 
     if (!config.file_path.empty()) {
         std::cerr << "[DEBUG] Opening File: " << config.file_path << "\n";
-        entries = read_lines(config.file_path);
+        entries = read_lines_mmap(config.file_path, file_data);
     } else {
         std::cerr << "[DEBUG] reading from stdin: \n";
         std::string line;
