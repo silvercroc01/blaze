@@ -1,12 +1,12 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 #include <vector>
 #include "types.hpp"
 
-std::vector<MatchResult> fuzzy_match(const std::string& query,
-                                     const std::vector<std::string>& entries);
+std::vector<MatchResult> fuzzy_match(const std::string_view query,
+                                     const std::vector<std::string_view>& entries);
 
-MatchResult calculate_match(const std::string& query, const std::string& line);
+MatchResult calculate_match(const std::string_view query, const std::string_view line);
 
-bool is_word_boundary(const std::string& s, size_t i);
+bool is_word_boundary(const std::string_view s, size_t i);
