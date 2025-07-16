@@ -58,7 +58,7 @@ std::vector<std::string_view> read_lines_mmap(const std::string& file_path,
         }
     }
 
-    if (start < file_path.size()) {
+    if (start < file_data.size()) {
         lines.emplace_back(&file_data[start], file_data.size() - start);
     }
     return lines;
