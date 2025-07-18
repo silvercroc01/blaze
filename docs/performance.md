@@ -37,7 +37,7 @@ $  time ./src/blaze_main --file ../english.txt --query od >  /dev/null 2>&1
 - Total Runtime: [0.137s]
 ```bash 
 $ time ./src/blaze_main --file ../biglist.txt --query od >  /dev/null 2>&1
-0.10s user 0.03s system 99% cpu 0.137 total system 99% cpu 0.143 total
+0.10s user 0.03s system 99% cpu 0.137 total
  ```
 
 
@@ -55,13 +55,41 @@ $ time ./src/blaze_main --file ../biglist.txt --query od >  /dev/null 2>&1
 
 ---
 
+
+---
+
+## Dataset 3: biglist.txt (Parallel Matching)
+
+- Source: [biglist.txt](https://github.com/kkrypt0nn/wordlists/raw/refs/heads/main/wordlists/passwords/most_used_passwords.txt)
+- Word Count: 999,997
+- Query: `od`
+- Total Runtime: [0.095s]
+```bash 
+
+$ time ./src/blaze_main --file ../biglist.txt --query od >  /dev/null 2>&1
+0.23s user 0.03s system 271% cpu 0.095 total
+```
+### Top Bottlenecks (gprof)
+| Function           | % Time | Notes                |
+|--------------------|--------|----------------------|
+| calculate_match    | 40%    | Matching logic       |
+| thread management  | 20%    | Thread management    |
+| File reading (mmap)| 20%    | Fast as others       |
+| __int              | 20%    | Startup              |
+| others             | ~0%    | Miscellaneous
+
+**Notes:**  
+- Used threads for parallel matching, now matching is as fast as others.
+
+---
 ## Summary Table
 
-| Dataset      | File Reading | Matching | Sorting | Total Time |
-|--------------|-------------|----------|---------|------------|
-| english.txt  | 20%         | 40%      | 20%     | [0.12s]    |
-| biglist.txt  | 33%         | 33%      | 33%     | [0.25s]    |
-
+| Dataset      | File Reading | Matching | Sorting| Threading | Total Time |
+|--------------|-------------|----------|---------|-----------|------------|
+| english.txt  | 20%         | 40%      | 20%     |   --      | [0.12s]    |
+| biglist.txt  | 33%         | 33%      | 33%     |   --      | [0.13s]    |
+| biglist.txt  | 20%         | 20%      | --      |   20%     | [0.09s]    |
+  
 ---
 
 ## How to Reproduce
@@ -79,4 +107,4 @@ $ time ./src/blaze_main --file ../biglist.txt --query od >  /dev/null 2>&1
 ## Change Log
 
 - **2025-07-17:** Switched to mmap for file reading. Balanced main bottlenecks.
-
+- **2025-07-19:** Implemented parallel matching. Achieved balanced CPU utilization.
