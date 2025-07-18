@@ -24,6 +24,10 @@ inline bool is_word_boundary(const std::string_view s, size_t i) {
     return !std::isalnum(prev) || (std::islower(prev) && std::isupper(curr));
 }
 
+inline bool is_char_equal(char a, char b) {
+    return std::tolower(static_cast<unsigned char>(a)) ==
+           std::tolower(static_cast<unsigned char>(b));
+}
 MatchResult calculate_match(const std::string_view query, const std::string_view line) {
     std::vector<size_t> match_indices;
 
@@ -36,20 +40,14 @@ MatchResult calculate_match(const std::string_view query, const std::string_view
     int first_match_pos = -1;
     int last_match_pos = -1;
 
-    // string preprocesssing to lowercase
-    std::string query_lower(query);
-    std::string line_lower(line);
-    std::transform(query_lower.begin(), query_lower.end(), query_lower.begin(), ::tolower);
-    std::transform(line_lower.begin(), line_lower.end(), line_lower.begin(), ::tolower);
-
     size_t query_pos = 0;
     size_t line_pos = 0;
 
-    while (query_pos < query_lower.size() && line_pos < line_lower.size()) {
+    while (query_pos < query.size() && line_pos < line.size()) {
         // no space left in rest of query
-        if (line_lower.size() - line_pos < query_lower.size() - query_pos)
+        if (line.size() - line_pos < query.size() - query_pos)
             break;
-        if (query_lower[query_pos] == line_lower[line_pos]) {
+        if (is_char_equal(query[query_pos], line[line_pos])) {
             match_indices.push_back(line_pos);
             if (first_match_pos == -1) {
                 first_match_pos = static_cast<int>(line_pos);
@@ -78,7 +76,7 @@ MatchResult calculate_match(const std::string_view query, const std::string_view
     }
 
     // no match then
-    if (query_pos < query_lower.size()) {
+    if (query_pos < query.size()) {
         return MatchResult{std::string(line), -1, {}};
     }
 
