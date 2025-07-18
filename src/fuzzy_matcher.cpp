@@ -1,18 +1,22 @@
 #include "fuzzy_matcher.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
+#include <future>
+#include <iterator>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 constexpr int BASE_SCORE = 1000;
 constexpr int CONSECUTIVE_BONUS = 20;
 constexpr int WORD_BOUNDARY_BONUS = 30;
-constexpr double WORD_BOUNDARY_MULTIPLIER = 2;
+constexpr int WORD_BOUNDARY_MULTIPLIER = 2;
 constexpr int COMPACTNESS_PENALTY = 30;
 constexpr int LATE_MATCH_PENALTY = 50;
 
-bool is_word_boundary(const std::string_view s, size_t i) {
+inline bool is_word_boundary(const std::string_view s, size_t i) {
     if (i == 0)
         return true;
     char prev = s[i - 1];
@@ -92,12 +96,43 @@ MatchResult calculate_match(const std::string_view query, const std::string_view
 }
 std::vector<MatchResult> fuzzy_match(const std::string_view query,
                                      const std::vector<std::string_view>& entries) {
+
+    size_t num_threads = std::thread::hardware_concurrency();
+    if (num_threads == 0) {
+        num_threads = 4; // fallback to a default value
+    }
+
+    // efficient thread utilization
+    size_t chunk_size = (entries.size() + num_threads - 1) / num_threads;
+    std::vector<std::future<std::vector<MatchResult>>> futures;
+
+    for (size_t t = 0; t < num_threads; ++t) {
+        size_t start = t * chunk_size;
+        size_t end = std::min(start + chunk_size, entries.size());
+
+        futures.push_back(std::async(std::launch::async, [&, start, end]() {
+            std::vector<MatchResult> local_results;
+            for (size_t i = start; i < end; ++i) {
+                auto result = calculate_match(query, entries[i]);
+                if (result.score >= 0) {
+                    local_results.push_back(result);
+                }
+            }
+            return local_results;
+        }));
+    }
+
     std::vector<MatchResult> results;
-    for (const auto& line : entries) {
-        auto result = calculate_match(query, line);
-        if (result.score >= 0) {
-            results.push_back(result);
-        }
+
+    size_t total_size = 0;
+    // reserve size
+
+    results.reserve(entries.size());
+
+    for (auto& fut : futures) {
+        auto local = fut.get();
+        results.insert(results.end(), std::make_move_iterator(local.begin()),
+                       std::make_move_iterator(local.end()));
     }
     std::sort(results.begin(), results.end(),
               [](const MatchResult& a, const MatchResult& b) { return a.score > b.score; });
