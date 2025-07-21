@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "[DEBUG] Output: " << result.line << " (score: " << result.score << ")\n";
 
         std::string output =
-            highlight_match(result.line, config.query, result.match_indices, !config.no_color);
+            highlight_match(result.line, result.match_indices, !config.no_color);
         std::cout << output << "\n";
     }
     return 0;
